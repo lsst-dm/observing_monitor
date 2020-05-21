@@ -25,9 +25,11 @@ def rec_listdir(dir):
     for file in filelist:
         if os.path.isdir(dir+'/'+file):
            for file2 in os.listdir(dir+'/'+file):
-               output.append(file+'/'+file2)
+               if file2[0] is not '.':
+                  output.append(file+'/'+file2)
         else:
-           output.append(file)
+           if file[0] is not '.':
+              output.append(file)
     return sorted(output)
 
 def trimslash(DIRLIST):
