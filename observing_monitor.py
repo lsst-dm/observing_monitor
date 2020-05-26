@@ -215,8 +215,10 @@ class db_filler:
         self.lnites=[]
         self.nlinks=0
         conn = sqlite3.connect(self.repo)
+        query="select run||'/'|| raftname||'/'||expId||'-'|| raftname ||'-'|| detectorName||'-det'||printf('%03d', detector)||'.fits' as FILENAME  from raw where dayObs = '"+self.nite+"' order by FILENAME"
+        print(query)
         c = conn.cursor()
-        c.execute("select run||'/'|| raftname||'/'||visit||'-'|| raftname ||'-'|| detectorName||'-det'||printf('%03d', detector)||'.fits' as FILENAME  from raw where dayObs = '"+self.nite+"' order by FILENAME")
+        c.execute(query)
         rows=c.fetchall()
         for FILENAME in [row[0] for row in rows]:
             FULLPATH = self.raw_dir+FILENAME

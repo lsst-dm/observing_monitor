@@ -3,3 +3,4 @@ python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_di
 python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_dir /lsstdata/offline/teststand/NCSA_auxTel --output ~/public_html/NCSA_auxTel 2
 python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_dir /lsstdata/offline/teststand/BOT --output ~/public_html/BOT 2 --query_links
 python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_dir /lsstdata/offline/teststand/comcam/CCS/ --output ~/public_html/comcam 2 --query_links
+python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_dir /lsstdata/offline/teststand/NCSA_comcam/ --output ~/public_html/NCSA_comcam 2 --query_links

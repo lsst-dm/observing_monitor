@@ -25,4 +25,7 @@ OUTPUT=/home/emorgan2/public_html/auxTel
 #OUTPUT=/home/emorgan2/public_html/comcam 
 #OPTIONS=--query_links
 
+#INPUT=/lsstdata/offline/teststand/NCSA_comcam
+#OUTPUT=/home/emorgan2/public_html/NCSA_comcam
+
 python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor.py --input_dir $INPUT --output $OUTPUT $NDAYS $OPTIONS
