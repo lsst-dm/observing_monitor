@@ -340,7 +340,7 @@ class db_filler:
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         for num in range(len(self.lpaths)):
-            c.execute("INSERT OR REPLACE INTO INGEST_LIST (Ingest_Path, FILENUM, Nite_Obs, Last_Update, Ingest_Time) VALUES('"+self.lpaths[num]+"', "+str(self.tinos[num]*10000+self.tdevs[num])+", '"+self.lnites[num]+"', '"+self.nowstr+"', '"+self.ltimestrs[num]+"')") 
+            c.execute("INSERT OR REPLACE INTO INGEST_LIST (Ingest_Path, FILENUM, Nite_Obs, Last_Update, Ingest_Time) VALUES('"+self.lpaths[num]+"', "+str(self.linos[num]*10000+self.ldevs[num])+", '"+self.lnites[num]+"', '"+self.nowstr+"', '"+self.ltimestrs[num]+"')") 
         conn.commit()
         conn.close()
         if len(self.lpaths) > 0:
@@ -421,6 +421,8 @@ def main():
         else:
             db_lines.count_links()
         db_lines.update_db_links()
+    for num in range(num_days):
+        db_lines.set_date(num)
         db_lines.get_night_data()
         db_lines.update_nite_html() 
     db_lines.update_main_html()

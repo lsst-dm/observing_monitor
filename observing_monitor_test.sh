@@ -20,7 +20,7 @@ source /home/emorgan2/.bashrc
 
 #INPUT=/lsstdata/offline/teststand/comcam/CCS
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_ccs
-#OPTIONS="--query-links --first_day=20190301"
+#OPTIONS="--query_links --first_day=20190301"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_auxTel
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_auxTel
