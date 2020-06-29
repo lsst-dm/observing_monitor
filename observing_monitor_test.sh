@@ -9,7 +9,7 @@ source /home/emorgan2/.bashrc
 # from a long time ago)
 # If neighter first night nor last night are set, it will just check last night and tonight
 # --query_links is set for repos that are not organized by date (necessitating a query). This incluess BOT and comcam.
-OPTIONS=''
+#OPTIONS=''
 
 #INPUT is the directory 1 level up from the repo
 #OUTPUT is where the html and a small db will be written
@@ -42,5 +42,5 @@ OPTIONS=''
 #OUTPUT=~/public_html/NCSA_comcam_test
 #OPTIONS="--query_links --first_day=20200306"
 
-echo python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor_test.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
-python /home/emorgan2/SOFTWARE/observing_monitor/observing_monitor_test.py --input_dir $INPUT --output $OUTPUT $OPTIONS
+echo python observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
+python observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS
