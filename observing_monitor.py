@@ -261,7 +261,7 @@ class db_filler:
         for FILENAME in [row[0] for row in rows]:
             FULLPATH = self.raw_dir+FILENAME
             if os.path.exists(FULLPATH):
-                self.ltimes.append(os.lstat(FULLPATH).st_mtime)
+                self.ltimes.append(os.lstat(FULLPATH).st_atime)
                 self.ltimestrs.append(datetime.utcfromtimestamp(self.ltimes[-1]).strftime('%Y-%m-%d-%H:%M:%S'))
                 self.lpaths.append('raw/'+FILENAME)
                 STAT=os.stat(FULLPATH)
@@ -298,7 +298,7 @@ class db_filler:
             if os.path.exists(NITEDIR):
                 for FILE in sorted(rec_listdir(NITEDIR)):
                     FULLPATH=NITEDIR+'/'+FILE
-                    self.ltimes.append(os.lstat(FULLPATH).st_mtime)
+                    self.ltimes.append(os.lstat(FULLPATH).st_atime)
                     STAT=os.stat(FULLPATH)
                     self.ldevs.append(STAT.st_dev)
                     self.linos.append(STAT.st_ino)
@@ -346,7 +346,6 @@ class db_filler:
         if len(self.lpaths) > 0:
              print("Inserted or replaced "+str(len(self.lpaths))+" into INGEST_LIST.")
     
-
     def get_night_data(self):
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
