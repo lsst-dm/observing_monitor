@@ -20,7 +20,7 @@ source /home/emorgan2/.bashrc
 
 #INPUT=/lsstdata/offline/teststand/comcam/CCS
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_ccs
-#OPTIONS="--query_links --first_day=20190301"
+#OPTIONS="--first_day=20190716"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_auxTel
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_auxTel
@@ -32,7 +32,7 @@ source /home/emorgan2/.bashrc
 
 #INPUT=/lsstdata/offline/teststand/comcam/Archiver
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_archiver
-#OPTIONS="--query_links --first_day=20200616"
+#OPTIONS="--first_day=20200616"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_comcam
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_comcam
