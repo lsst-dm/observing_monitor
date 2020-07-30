@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/bash
 source /home/emorgan2/.bashrc
 #Setting number of days that will be probed. We default to 2 to cover overnight transfer
 
@@ -38,9 +38,9 @@ source /home/emorgan2/.bashrc
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_comcam
 #OPTIONS="--query_links --first_day=20200306"
 
-#INPUT=/lsstdata/offline/teststand/NCSA_comcam
-#OUTPUT=~/public_html/NCSA_comcam_test
-#OPTIONS="--query_links --first_day=20200306"
+INPUT=/lsstdata/offline/teststand/NCSA_comcam
+OUTPUT=~/public_html/NCSA_comcam_test
+OPTIONS="--query_links --first_day=20200306"
 
-echo python observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
-python observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS
+echo observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
+./observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS > blah.txt &
