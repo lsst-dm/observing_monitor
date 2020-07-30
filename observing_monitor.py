@@ -383,8 +383,8 @@ class db_filler:
         outhtml.write('"Creation Time" is the UTC the file was created.<br>\n')
         outhtml.write('"Ingest Path" is the path of the transferred file at NCSA with root '+self.repo_dir+'.<br>\n')
         outhtml.write('"Ingest Time" is the UTC of the file ingestion at NCSA.<br>\n')
-        outhtml.write('"Delta Time" is the time between Creation and ingestion at NCSA (approximate transfer time).<br><br>\n')
-        outhtml.write(db_to_html(self.db, ['select File_Name, Transfer_Path, Creation_Time, "None" as Ingest_Path, "None" as Ingest_Time, 0.0 as Delta_Time from TRANSFER_LIST where FILENUM not in (select FILENUM from Ingest_list) and Nite_Trans = "'+self.nite+'" ORDER BY Creation_Time', 'select File_Name, Transfer_Path, Creation_Time, Ingest_Path, Ingest_Time, (julianday(Ingest_Time)-julianday(Creation_Time))*24*3600. as Delta_Time from Ingest_List i, Transfer_List t where i.FILENUM = t.FILENUM and Nite_Obs = "'+self.nite+'" ORDER BY Creation_time']))
+        outhtml.write('"Delta Time" is the time (in seconds) between Creation and ingestion at NCSA (approximate transfer time).<br><br>\n')
+        outhtml.write(db_to_html(self.db, ['select File_Name, Transfer_Path, Creation_Time, "None" as Ingest_Path, "None" as Ingest_Time, 0.0 as Delta_Time from TRANSFER_LIST where FILENUM not in (select FILENUM from Ingest_list) and Nite_Trans = "'+self.nite+'" ORDER BY Creation_Time', 'select File_Name, Transfer_Path, Creation_Time, Ingest_Path, Ingest_Time, printf("%.1f",(julianday(Ingest_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time from Ingest_List i, Transfer_List t where i.FILENUM = t.FILENUM and Nite_Obs = "'+self.nite+'" ORDER BY Creation_time']))
         outhtml.write('</body>\n</html>')
         outhtml.close()
 
