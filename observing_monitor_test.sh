@@ -25,22 +25,21 @@ source /home/emorgan2/.bashrc
 #INPUT=/lsstdata/offline/teststand/NCSA_auxTel
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_auxTel
 #OPTIONS="--first_day=20200325"
-
 #INPUT=/lsstdata/offline/teststand/BOT 
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/BOT 
-#OPTIONS="--query_links --first_day=20181130"
+#OPTIONS="--first_day=20181130"
 
 #INPUT=/lsstdata/offline/teststand/comcam/Archiver
 #OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_archiver
 #OPTIONS="--first_day=20200616"
 
-INPUT=/lsstdata/offline/teststand/NCSA_comcam
-OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_comcam
-OPTIONS="--query_links --first_day=20200306"
+#INPUT=/lsstdata/offline/teststand/NCSA_comcam
+#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_comcam
+#OPTIONS="--query_links --first_day=20200306"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_comcam
 #OUTPUT=~/public_html/NCSA_comcam_test
 #OPTIONS="--query_links --first_day=20200306"
 
 echo observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
-./observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS > blah.txt &
+./observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS
