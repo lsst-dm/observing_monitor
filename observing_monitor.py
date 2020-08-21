@@ -140,8 +140,8 @@ def get_config():
                help="Location of ingest log (will default to today's log.")
     parser.add('--output_dir', action='store', type=str, required=True,
                help='Path to output directory where DB and webpage will live')
-    parser.add('--query_links', action='store_true',
-               help='Query repo for all links (for repos that do not organize by date; e.g. comCam and BOT).')
+    parser.add('--search_links', action='store_true',
+               help='Search repo for all links (for repos with nonstandard db format).')
     parser.add('--num_days', action='store', type=int, required=False,
                help='Number of days before the last date.')
     config = vars(parser.parse_args())
@@ -245,7 +245,7 @@ class db_filler:
                      self.nfiles += 1
                      dirfile+=1
 
-    def count_links_query(self):    
+    def count_links(self):    
         self.ltimes=[]
         self.ltimestrs=[]
         self.lpaths=[]
@@ -255,8 +255,16 @@ class db_filler:
         self.lnites=[]
         self.nlinks=0
         conn = sqlite3.connect(self.repo)
-        query="select run||'/'|| raftname||'/'||expId||'-'|| raftname ||'-'|| detectorName||'-det'||printf('%03d', detector)||'.fits' as FILENAME  from raw where dayObs = '"+self.nite+"' order by FILENAME"
         c = conn.cursor()
+        query='PRAGMA table_info(raw)'
+        c.execute(query)
+        columns= [element[1].lower() for element in c.fetchall()]
+# Does this table have raftname (BOT, comcam) or not (auxtel)?
+        if 'raftname' in columns:        
+           query="select dayObs||'/'||expId||'/'||expid||'-'|| raftname ||'-'|| detectorName||'-det'||printf('%03d', detector)||'.fits' as FILENAME  from raw where dayObs = '"+self.nite+"' order by FILENAME"
+        else:
+           query="select dayObs||'/'||expid||'-det'||printf('%03d', detector)||'.fits' as FILENAME from raw where dayObs = '"+self.nite+"' order by FILENAME"
+           
         c.execute(query)
         rows=c.fetchall()
         for FILENAME in [row[0] for row in rows]:
@@ -282,7 +290,7 @@ class db_filler:
         print(str(self.nlinks)+" found.")
         conn.close()
 
-    def count_links(self,DIRLIST=[]):
+    def count_links_search(self,DIRLIST=[]):
         self.ltimes=[]
         self.ltimestrs=[]
         self.lpaths=[]
@@ -417,10 +425,10 @@ def main():
         db_lines.set_date(num)
         db_lines.count_new_files()
         db_lines.update_db_files()
-        if config['query_links']:
-            db_lines.count_links_query()
-        else:
+        if config['search_links']:
             db_lines.count_links()
+        else:
+            db_lines.count_links_search()
         db_lines.update_db_links()
     for num in range(num_days):
         db_lines.set_date(num)

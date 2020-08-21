@@ -2,6 +2,10 @@
 source /home/emorgan2/.bashrc
 #Setting number of days that will be probed. We default to 2 to cover overnight transfer
 
+OUTDIR=~/public_html
+#OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
+
+
 #Options
 # --last_day 20200501 (or some other 8 character date) will set the last night to be something other than tonight (e.g. to check data 
 # from an earlier night)
@@ -15,31 +19,28 @@ source /home/emorgan2/.bashrc
 #OUTPUT is where the html and a small db will be written
 
 #INPUT=/lsstdata/offline/teststand/auxTel/L1Archiver
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/auxTel
+#OUTPUT=$OUTDIR/auxTel
 #OPTIONS="--first_day=20190305"
 
 #INPUT=/lsstdata/offline/teststand/comcam/CCS
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_ccs
+#OUTPUT=$OUTDIR/comcam_ccs
 #OPTIONS="--first_day=20190716"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_auxTel
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_auxTel
+#OUTPUT=$OUTDIR/NCSA_auxTel
 #OPTIONS="--first_day=20200325"
+
 #INPUT=/lsstdata/offline/teststand/BOT 
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/BOT 
-#OPTIONS="--first_day=20181130"
+#OUTPUT=$OUTDIR/BOT 
+#OPTIONS="--first_day=20200818"
 
-#INPUT=/lsstdata/offline/teststand/comcam/Archiver
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/comcam_archiver
-#OPTIONS="--first_day=20200616"
-
-#INPUT=/lsstdata/offline/teststand/NCSA_comcam
-#OUTPUT=/lsstdata/user/staff/web_data/processing_monitor/NCSA_comcam
-#OPTIONS="--query_links --first_day=20200306"
+INPUT=/lsstdata/offline/teststand/comcam/Archiver
+OUTPUT=$OUTDIR/comcam_archiver
+OPTIONS="--first_day=20200616"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_comcam
-#OUTPUT=~/public_html/NCSA_comcam_test
-#OPTIONS="--query_links --first_day=20200306"
+#OUTPUT=$OUTDIR/NCSA_comcam
+#OPTIONS="--first_day=20200306"
 
 echo observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
 ./observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS
