@@ -11,6 +11,7 @@ import re
 import statistics
 import traceback
 import psycopg2
+from webpage import db_to_html
 
 def countdays(num_days, first_day,last_day):
     if first_day is None:
@@ -80,47 +81,6 @@ def samelink(file1,file2):
     s1 = os.stat(file1)
     s2 = os.stat(file2)
     return (s1.st_ino, s1.st_dev) == (s2.st_ino, s2.st_dev)
-
-def db_to_html(db, query, linkify=False):
-    if isinstance(query,str):
-      query=[query]
-    conn = sqlite3.connect(db)
-    html='<table style="width:100%">\n'
-    c = conn.cursor()
-    c.execute(query[0])
-    columns= [description[0] for description in c.description]
-    td='</td><td>'
-    tdl='</td><td style="border-left:2px dashed silver;">'
-    btd='</b></td><td><b>'
-    hstring='<thead><tr style="border-top:3px solid black; border-bottom:3px solid black;"><td><b>'
-    for column in columns:
-        hstring+=column.replace('_',' ')+btd
-    hstring += '</b></td></tr></thead>\n'
-    html += hstring
-    rows=c.fetchall()
-    for num in range(1,len(query)):
-        c.execute(query[num])
-        rows.extend(c.fetchall())
-        
-    printhnum=20
-    rownum=0
-    for row in rows:
-       if rownum == printhnum:
-           html += hstring
-           rownum=0
-       rownum+=1
-       html+='<tr style="border-bottom:2px dashed silver;"><td>'
-       datanum=0
-       for data in row:
-           if (datanum == 0 ) & (linkify):
-              html+='<a href="'+str(data)+'.html">'+str(data)+'</a>'+tdl
-           else: 
-              html+=str(data)+tdl
-           datanum+=1
-       html+='</tr>\n'
-    html+='</table>\n'
-    return html
-
 
 def get_config():
     """Parse command line args, config file, environment variables to get configuration.
