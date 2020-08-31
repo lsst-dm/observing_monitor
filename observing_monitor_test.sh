@@ -2,8 +2,8 @@
 source /home/emorgan2/.bashrc
 #Setting number of days that will be probed. We default to 2 to cover overnight transfer
 
-OUTDIR=~/public_html
-#OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
+#OUTDIR=~/public_html
+OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
 
 
 #Options
@@ -30,13 +30,14 @@ OUTDIR=~/public_html
 #OUTPUT=$OUTDIR/NCSA_auxTel
 #OPTIONS="--first_day=20200325"
 
-#INPUT=/lsstdata/offline/teststand/BOT 
-#OUTPUT=$OUTDIR/BOT 
-#OPTIONS="--first_day=20200818"
+INPUT=/lsstdata/offline/teststand/BOT 
+OUTPUT=$OUTDIR/BOT 
+OPTIONS="--first_day=20200818"
+OPTIONS="--first_day=20200828"
 
-INPUT=/lsstdata/offline/teststand/comcam/Archiver
-OUTPUT=$OUTDIR/comcam_archiver
-OPTIONS="--first_day=20200616"
+#INPUT=/lsstdata/offline/teststand/comcam/Archiver
+#OUTPUT=$OUTDIR/comcam_archiver
+#OPTIONS="--first_day=20200616"
 
 #INPUT=/lsstdata/offline/teststand/NCSA_comcam
 #OUTPUT=$OUTDIR/NCSA_comcam

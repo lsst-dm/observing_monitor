@@ -10,6 +10,7 @@ import numpy as np
 import re
 import statistics
 import traceback
+import psycopg2
 
 def countdays(num_days, first_day,last_day):
     if first_day is None:
@@ -165,7 +166,9 @@ class db_filler:
         else:
            self.last_day=datetime(int(last_day[0:4]),int(last_day[4:6]),int(last_day[6:8]),0,tzinfo=timezone.utc)
         self.ingest_log = ingest_log
- 
+    def db_conn(self):
+        params=config()
+        conn = psycopg2.connect(**params)
     def check_input_dir(self):
         self.repo_dir=self.input_dir+'/gen2repo/'
         self.raw_dir=self.repo_dir+'raw/'
@@ -267,6 +270,7 @@ class db_filler:
            
         c.execute(query)
         rows=c.fetchall()
+        conn.close()
         for FILENAME in [row[0] for row in rows]:
             FULLPATH = self.raw_dir+FILENAME
             if os.path.exists(FULLPATH):
@@ -288,7 +292,6 @@ class db_filler:
             else:
                 print(FULLPATH+' does not exist.')
         print(str(self.nlinks)+" found.")
-        conn.close()
 
     def count_links_search(self,DIRLIST=[]):
         self.ltimes=[]
