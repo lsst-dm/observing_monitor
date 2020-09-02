@@ -30,17 +30,17 @@ OUTDIR=~/public_html
 #OUTPUT=$OUTDIR/NCSA_auxTel
 #OPTIONS="--first_day=20200325"
 
-#INPUT=/lsstdata/offline/teststand/BOT 
-#OUTPUT=$OUTDIR/BOT 
-#OPTIONS="--first_day=20200818"
+INPUT=/lsstdata/offline/teststand/BOT 
+OUTPUT=$OUTDIR/BOT 
+OPTIONS="--first_day=20200818"
 
 #INPUT=/lsstdata/offline/teststand/comcam/Archiver
 #OUTPUT=$OUTDIR/comcam_archiver
 #OPTIONS="--first_day=20200616"
 
-INPUT=/lsstdata/offline/teststand/NCSA_comcam
-OUTPUT=$OUTDIR/NCSA_comcam
-OPTIONS="--first_day=20200306"
+#INPUT=/lsstdata/offline/teststand/NCSA_comcam
+#OUTPUT=$OUTDIR/NCSA_comcam
+#OPTIONS="--first_day=20200306"
 
 echo observing_monitor.py --input_dir $INPUT --output $OUTPUT  $OPTIONS
 ./observing_monitor.py --input_dir $INPUT --output $OUTPUT $OPTIONS
