@@ -154,8 +154,8 @@ class db_filler:
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS FILE_COUNT (Nite_Obs TEXT PRIMARY KEY, Last_Update TEXT, N_Files INTEGER, Last_Creation TEXT, N_Ingest INTEGER, N_Small INTEGER, N_Not_Fits, N_Error INTEGER, Last_Ingest TEXT)")
-        c.execute("CREATE TABLE IF NOT EXISTS TRANSFER_LIST (File_Name TEXT PRIMARY KEY, FILENUM INTEGER,  Nite_Trans TEXT, Last_Update TEXT, Transfer_Path TEXT, Creation_Time TEXT, File_Size INT)")
-        c.execute("CREATE TABLE IF NOT EXISTS INGEST_LIST (Ingest_Path TEXT PRIMARY KEY, FILENUM INTEGER, Nite_Obs TEXT, Last_Update TEXT, Ingest_Time TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS TRANSFER_LIST (Filenum INTEGER PRIMARY KEY,  Nite_Trans TEXT, Last_Update TEXT, Transfer_Path TEXT, Creation_Time TEXT, File_Size INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS INGEST_LIST (FILENUM INTEGER PRIMARY KEY, Ingest_Path TEXT, Nite_Obs TEXT, Last_Update TEXT, Ingest_Time TEXT)")
         conn.commit()
         conn.close()
 
@@ -304,7 +304,7 @@ class db_filler:
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         for num in range(len(self.filenames)):
-            c.execute("INSERT OR REPLACE INTO TRANSFER_LIST (File_Name, FILENUM, Nite_Trans, Last_Update, Transfer_Path, Creation_Time, File_Size) VALUES('"+self.filenames[num].split('/')[-1]+"', "+str(self.tinos[num]*10000+self.tdevs[num])+", '"+self.tnites[num]+"', '"+self.nowstr+"', '"+self.filenames[num]+"', '"+self.ttimestrs[num]+"', "+str(self.filesizes[num])+")")
+            c.execute("INSERT OR REPLACE INTO TRANSFER_LIST (Filenum, Nite_Trans, Last_Update, Transfer_Path, Creation_Time, File_Size) VALUES("+str(self.tinos[num]*10000+self.tdevs[num])+", '"+self.tnites[num]+"', '"+self.nowstr+"', '"+self.filenames[num]+"', '"+self.ttimestrs[num]+"', "+str(self.filesizes[num])+")")
         conn.commit()
         conn.close()
         if len(self.filenames) > 0:
@@ -314,7 +314,7 @@ class db_filler:
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         for num in range(len(self.lpaths)):
-            c.execute("INSERT OR REPLACE INTO INGEST_LIST (Ingest_Path, FILENUM, Nite_Obs, Last_Update, Ingest_Time) VALUES('"+self.lpaths[num]+"', "+str(self.linos[num]*10000+self.ldevs[num])+", '"+self.lnites[num]+"', '"+self.nowstr+"', '"+self.ltimestrs[num]+"')") 
+            c.execute("INSERT OR REPLACE INTO INGEST_LIST (Filenum, Ingest_Path, Nite_Obs, Last_Update, Ingest_Time) VALUES("+str(self.linos[num]*10000+self.ldevs[num])+", '"+self.lpaths[num]+"', '"+self.lnites[num]+"', '"+self.nowstr+"', '"+self.ltimestrs[num]+"')") 
         conn.commit()
         conn.close()
         if len(self.lpaths) > 0:
@@ -330,7 +330,7 @@ class db_filler:
         else:
             [self.ningest,self.maxttime,self.maxitime]=[0,'0000-00-00T00:00:00','0000-00-00T00:00:00' ]
         sizemin='10000'
-        c.execute('select count(File_Name), max(Creation_Time), sum(File_Size < '+sizemin+'), sum(substr(File_Name,-5) != ".fits"),  sum((substr(File_Name,-5) == ".fits")*(File_Size > '+sizemin+')) from TRANSFER_LIST where FILENUM not in (select FILENUM from INGEST_LIST) and Nite_Trans = "'+self.nite+'" group by Nite_Trans')
+        c.execute('select count(FILENUM), max(Creation_Time), sum(File_Size < '+sizemin+'), sum(substr(Transfer_Path,-5) != ".fits"),  sum((substr(Transfer_Path,-5) == ".fits")*(File_Size > '+sizemin+')) from TRANSFER_LIST where FILENUM not in (select FILENUM from INGEST_LIST) and Nite_Trans = "'+self.nite+'" group by Nite_Trans')
         rows=c.fetchall()
         if len(rows) > 0:
             [ntransfer_unmatched, maxttime, self.nsmall,self.nnotfits,self.nerror] = rows[0]
@@ -360,7 +360,7 @@ class db_filler:
         outhtml.write('"Ingest Path" is the path of the transferred file at NCSA with root '+self.repo_dir+'.<br>\n')
         outhtml.write('"Ingest Time" is the UTC of the file ingestion at NCSA.<br>\n')
         outhtml.write('"Delta Time" is the time (in seconds) between Creation and ingestion at NCSA (approximate transfer time).<br><br>\n')
-        outhtml.write(db_to_html(self.db, ['select File_Name, File_Size, Transfer_Path, Creation_Time, "None" as Ingest_Path, "None" as Ingest_Time, 0.0 as Delta_Time from TRANSFER_LIST where FILENUM not in (select FILENUM from Ingest_list) and Nite_Trans = "'+self.nite+'" ORDER BY Creation_Time', 'select File_Name, File_Size, Transfer_Path, Creation_Time, Ingest_Path, Ingest_Time, printf("%.1f",(julianday(Ingest_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time from Ingest_List i, Transfer_List t where i.FILENUM = t.FILENUM and Nite_Obs = "'+self.nite+'" ORDER BY Creation_time']))
+        outhtml.write(db_to_html(self.db, ['select Transfer_Path, File_Size, Creation_Time, "None" as Ingest_Path, "None" as Ingest_Time, 0.0 as Delta_Time from TRANSFER_LIST where FILENUM not in (select FILENUM from Ingest_list) and Nite_Trans = "'+self.nite+'" ORDER BY Creation_Time', 'select Transfer_Path, File_Size, Creation_Time, Ingest_Path, Ingest_Time, printf("%.1f",(julianday(Ingest_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time from Ingest_List i, Transfer_List t where i.FILENUM = t.FILENUM and Nite_Obs = "'+self.nite+'" ORDER BY Creation_time']))
         outhtml.write('</body>\n</html>')
         outhtml.close()
 

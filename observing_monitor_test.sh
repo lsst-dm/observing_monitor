@@ -2,8 +2,8 @@
 source /home/emorgan2/.bashrc
 #Setting number of days that will be probed. We default to 2 to cover overnight transfer
 
-#OUTDIR=~/public_html
-OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
+OUTDIR=~/public_html
+#OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
 
 
 #Options
