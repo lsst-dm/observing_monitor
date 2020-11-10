@@ -6,7 +6,7 @@ if len(sys.argv) != 2:
    print("Where DATE is the earliest date to look for files in YYYY-MM-DD format.")
    sys.exit()
 
-DB ="/lsstdata/user/staff/web_data/processing_monitor/BOT/observing_monitor.sqlite3"
+DB ="/lsstdata/offline/web_data/processing_monitor/BOT/observing_monitor.sqlite3"
 query='select Transfer_Path from TRANSFER_LIST where Transfer_Path like "%%Photo%txt" and Nite_Trans > "'+sys.argv[1]+'" order by transfer_path'
 outdir='photodiodes'
 outdir='/lsstdata/offline/teststand/BOT/photodiode_data'

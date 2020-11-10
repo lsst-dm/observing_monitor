@@ -101,7 +101,7 @@ def get_config():
                help="Location of ingest log (will default to today's log.")
     parser.add('--output_dir', action='store', type=str, required=True,
                help='Path to output directory where DB and webpage will live')
-    parser.add('--search_links', action='store_true',
+    parser.add('--search_links', action='store_true', 
                help='Search repo for all links (for repos with nonstandard db format).')
     parser.add('--num_days', action='store', type=int, required=False,
                help='Number of days before the last date.')
@@ -396,9 +396,9 @@ def main():
         db_lines.count_new_files()
         db_lines.update_db_files()
         if config['search_links']:
-            db_lines.count_links()
-        else:
             db_lines.count_links_search()
+        else:
+            db_lines.count_links()
         db_lines.update_db_links()
     for num in range(num_days):
         db_lines.set_date(num)
