@@ -33,7 +33,7 @@ OUTDIR=/lsstdata/offline/web_data/processing_monitor
 
 INPUT=/lsstdata/offline/teststand/BOT 
 OUTPUT=$OUTDIR/BOT 
-OPTIONS="--first_day=20201104 --last_day=20201104"
+OPTIONS="--first_day=20201117"
 
 #INPUT=/lsstdata/offline/teststand/comcam/Archiver
 #OUTPUT=$OUTDIR/comcam_archiver
