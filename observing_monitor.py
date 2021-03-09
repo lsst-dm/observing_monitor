@@ -7,11 +7,44 @@ import sys
 import os
 import glob
 import numpy as np
+import pandas as pd
 import re
+import sqlalchemy
 import statistics
 import traceback
 import psycopg2
 from webpage import db_to_html
+
+def getnite(indate):
+    if len(indate) == 8:
+        if indate.isdigit():
+            return indate[:4]+'-'+indate[4:6]+'-'+indate[6:8]
+    if len(indate) == 10:
+        if  indate[:4].isdigit() & indate[5:7].isdigit() & indate[8:10].isdigit():
+            return indate[:4]+'-'+indate[5:7]+'-'+indate[8:10]
+    return ''
+
+def findtable(DIR):
+    DIRL=DIR.lower()
+    if "ncsa_auxtel" in DIRL:
+        return "nts_auxtel_"
+    if "ncsa_comcam" in DIRL:
+        return "nts_comcam_"
+    if "auxtel" in DIRL:
+        if "archiver" in DIRL:
+            return "obs_auxtel_arc_"
+        if "daq" in DIRL:
+            return "obs_auxtel_ccs_"
+
+    if "auxtel" in DIRL:
+        if "archiver" in DIRL:
+            return "obs_comcam_arc_"
+        if "ccs" in DIRL:
+            return "obs_comcam_ccs_"
+    if "bot" in DIRL:
+        return "slac_bot_"
+    print("Could not determine database for directoy "+DIR+". Exiting")
+    sys.exit(1)
 
 def countdays(num_days, first_day,last_day):
     if first_day is None:
@@ -95,6 +128,8 @@ def get_config():
                help='Path to input directory at NCSA. Must include storage and gen2repo subdirectories')
     parser.add('--first_day', action='store', type=str, required=False,
                help='Date in YYYYMMYY format for first. Must be before last day. Will override num_days')
+    parser.add('--gen', action='store', type=int, required=False, default=2,
+               help='Generation butler (2 or 3) supported.')
     parser.add('--last_day', action='store', type=str, required=False,
                help='Date in YYYYMMYY format for last day if not today.')
     parser.add('--ingest_log', action='store', type=str, required=False,
@@ -154,6 +189,8 @@ class db_filler:
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS FILE_COUNT (Nite_Obs TEXT PRIMARY KEY, Last_Update TEXT, N_Files INTEGER, Last_Creation TEXT, N_Ingest INTEGER, N_Small INTEGER, N_Not_Fits, N_Error INTEGER, Last_Ingest TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS FILE_COUNT_GEN3 (Nite_Obs TEXT PRIMARY KEY, Last_Update TEXT, N_Files INTEGER, Last_Creation TEXT, N_Ingest INTEGER, N_Small INTEGER, N_Not_Fits, N_Error INTEGER, Last_Transfer TEXT, Last_Ingest TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS FILE_LIST_GEN3 (Filenum INTEGER PRIMARY KEY, Nite TEXT, Last_Update TEXT, Transfer_Path TEXT, Status TEXT, Creation_Time TEXT, Transfer_Time TEXT, Ingest_Time TEXT, File_Size INT, Err_Message TEXT)")
         c.execute("CREATE TABLE IF NOT EXISTS TRANSFER_LIST (Filenum INTEGER PRIMARY KEY,  Nite_Trans TEXT, Last_Update TEXT, Transfer_Path TEXT, Creation_Time TEXT, File_Size INT)")
         c.execute("CREATE TABLE IF NOT EXISTS INGEST_LIST (FILENUM INTEGER PRIMARY KEY, Ingest_Path TEXT, Nite_Obs TEXT, Last_Update TEXT, Ingest_Time TEXT)")
         conn.commit()
@@ -210,9 +247,40 @@ class db_filler:
                      self.nfiles += 1
                      dirfile+=1
 
+    def count_files_gen3(self):   
+        table=findtable(self.input_dir) 
+        query="set TIMEZONE='UTC'; with ne as (select id, relpath||'/'||filename as path, status, added_on, start_time, err_message from "+table+"files, "+table+"gen3_file_events where files_id = id and added_on > '"+self.nite+" 00:00:00+00'),  max as (select id as mid, max(start_time) as mtime from ne group by id) select id, path, status, CAST(CAST(added_on as timestamp) as varchar(25))  as ttime, CAST(CAST(start_time as timestamp) as varchar(25))  as itime, err_message from ne, max where id = mid and mtime = start_time"
+        engine = sqlalchemy.create_engine('postgresql://svclsstdbdbbbm@lsst-pg-prod1.ncsa.illinois.edu:5432/lsstdb1')
+        df=pd.read_sql(query, engine)
+        self.paths=np.array(df['path'])
+        self.ids=np.array(df['id'],dtype=int)
+        self.nites=np.array(len(df)*['0000-00-00'])
+        self.statuss=np.array(df['status'])
+        self.ctimes=np.array(len(df)*['0000-00-00T00:00:00.00'])
+        self.ttimes=np.array(df['ttime'])
+        self.itimes=np.array(df['itime'])
+        self.filesizes=np.zeros(len(df),dtype=int)
+        self.err_messages=np.array(df['err_message'])
+        self.err_messages[self.err_messages==None]=''
+        for num in range(len(df)):
+            FULLPATH = self.storage+self.paths[num]
+            self.ttimes[num] = self.ttimes[num].replace(' ','T')
+            self.itimes[num] = self.itimes[num].replace(' ','T')
+            self.nites[num] = (datetime.strptime(self.ttimes[num],'%Y-%m-%dT%H:%M:%S.%f')-timedelta(hours=12)).strftime('%Y-%m-%d')
+            if os.path.exists(FULLPATH):
+               self.filesizes[num]=(os.stat(FULLPATH).st_size)
+               self.ctimes[num]=datetime.utcfromtimestamp(os.lstat(FULLPATH).st_ctime).strftime('%Y-%m-%dT%H:%M:%S.%f')
+               if self.ctimes[num] < self.ttimes[num]:
+                   self.nites[num]=(datetime.strptime(self.ctimes[num],'%Y-%m-%dT%H:%M:%S.%f')-timedelta(hours=12)).strftime('%Y-%m-%d')
+            else:
+               print(FULLPATH+" not found.")
+            nite = getnite(self.paths[num].split('/')[0])
+            if nite != '':
+               self.nites[num] = nite 
+  
     def count_links(self):    
         self.ltimes=[]
-        self.ltimestrs=[]
+        self.ltimetttt=[]
         self.lpaths=[]
         self.ldevs=[]
         self.linos=[]
@@ -310,6 +378,17 @@ class db_filler:
         if len(self.filenames) > 0:
              print("Inserted or replaced "+str(len(self.filenames))+" into TRANSFER_LIST.")
 
+    def update_db_gen3(self):
+        conn = sqlite3.connect(self.db)
+        c = conn.cursor()
+        for num in range(len(self.ids)):
+            query="INSERT OR REPLACE INTO FILE_LIST_GEN3 (Filenum, Nite, Last_Update, Transfer_Path, Status, Creation_Time, Transfer_Time, Ingest_Time, File_Size, Err_Message) VALUES("+str(self.ids[num])+", '"+self.nites[num]+"', '"+self.nowstr+"', '"+self.paths[num]+"', '"+self.statuss[num]+"', '"+self.ctimes[num]+"', '"+self.ttimes[num]+"', '"+self.itimes[num]+"', "+str(self.filesizes[num])+", '"+self.err_messages[num]+"')"
+            c.execute(query)
+        conn.commit()
+        conn.close()
+        if len(self.ids) > 0:
+             print("Inserted or replaced "+str(len(self.ids))+" into FILE_LIST_GEN3.")
+
     def update_db_links(self):
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
@@ -320,6 +399,20 @@ class db_filler:
         if len(self.lpaths) > 0:
              print("Inserted or replaced "+str(len(self.lpaths))+" into INGEST_LIST.")
     
+    def get_night_data_gen3(self):
+        conn = sqlite3.connect(self.db)
+        c = conn.cursor()
+        sizemin='10000'
+        c.execute('select count(Transfer_Path), max(Creation_Time), sum(Status == "SUCCESS"), max(Transfer_Time), max(Ingest_Time), sum(substr(Transfer_Path,-5) != ".fits"), sum((substr(Transfer_Path,-5) == ".fits")*(File_Size < '+sizemin+')), sum((substr(Transfer_Path,-5) == ".fits")*(File_Size > '+sizemin+')*(Status != "SUCCESS")) from FILE_LIST_GEN3 t where Nite = "'+self.nite+'" group by Nite')
+        rows=c.fetchall()
+        if len(rows) > 0:
+            [self.ntransfer, self.maxctime, self.ningest, self.maxttime, self.maxitime, self.nnotfits, self.nsmall, self.nerror]=rows[0]
+        else:
+            [self.ntransfer, self.maxctime, self.ningest, self.maxttime, self.maxitime, self.nnotfits, self.nsmall, self.nerror]=[0, '0000-00-00T00:00:00', 0, '0000-00-00T00:00:00','0000-00-00T00:00:00', 0, 0, 0 ]
+        c.execute("INSERT OR REPLACE INTO FILE_COUNT_GEN3 (Nite_Obs, Last_Update, N_Files, Last_Creation, N_Ingest, N_Small, N_Not_Fits, N_Error, Last_Transfer, Last_Ingest) VALUES('"+self.nite+"', '"+self.nowstr+"', "+str(self.ntransfer)+", '"+self.maxctime+"', "+str(self.ningest)+", "+str(self.nsmall)+", "+str(self.nnotfits)+", "+str(self.nerror)+", '"+self.maxttime+"', '"+self.maxitime+"')")
+        conn.commit()
+        conn.close()
+
     def get_night_data(self):
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
@@ -343,6 +436,30 @@ class db_filler:
         conn.commit()
         conn.close()
 
+    def update_nite_html_gen3(self):
+        outhtml=open(self.output_dir+'/'+self.nite+'_gen3.html','w')
+        outhtml.write('<html>\n<head>\n<style>\n')
+        outhtml.write('table, th, td {\nborder-collapse: collapse;\nfont-size: 20pt;\n }\n')
+        outhtml.write('p {font-size: 20pt;\n }\n')
+        outhtml.write('</style>\n')
+        outhtml.write('</head>\n<body>\n')
+        outhtml.write('<h1>'+self.name+' Transfer and Ingestion for Nite of '+self.nite+'</h1>') 
+        outhtml.write('<p>Last updated: '+self.nowstr+'</p>\n')
+        outhtml.write('<h2>Description</h2>\n')
+        outhtml.write('<p>"File Name" is the name of the file transferred to NCSA.<br>\n')
+        outhtml.write('"Status" is the result of the most recent ingestion attempt.<br>\n')
+        outhtml.write('"File Size" is measured in bytes.<br>\n')
+        outhtml.write('"Transfer Path" is the path of the transferred file at NCSA with root '+self.storage+'.<br>\n')
+        outhtml.write('"Creation Time" is the UTC the file was created (based on Unix ctime).<br>\n')
+        outhtml.write('"Transfer Time" is the UTC the file was created.<br>\n')
+        outhtml.write('"Ingest Time" is the UTC of the file ingestion at NCSA.<br>\n')
+        outhtml.write('"Delta Time 1" is the time (in seconds) between Creation and Transfer to NCSA (approximate transfer time).<br>\n')
+        outhtml.write('"Delta Time 2" is the time (in seconds) between Transfer and Ingestion to NCSA (approximate transfer time).<br>\n')
+        outhtml.write('"Err Message" is the Error Message from a failed ingestion attempt (if the most recent attempt failed).<br><br>\n')
+        outhtml.write(db_to_html(self.db, ['select Transfer_Path, Status, File_Size, Creation_Time, Transfer_Time, Ingest_Time,  printf("%.1f",(julianday(Transfer_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time_1,  printf("%.1f",(julianday(Ingest_Time)-julianday(Transfer_Time))*24*3600.) as Delta_Time_2, Err_Message from FILE_LIST_GEN3 where Nite = "'+self.nite+'" ORDER BY Creation_Time']))
+        outhtml.write('</body>\n</html>')
+        outhtml.close()
+
     def update_nite_html(self):
         outhtml=open(self.output_dir+'/'+self.nite+'.html','w')
         outhtml.write('<html>\n<head>\n<style>\n')
@@ -361,6 +478,30 @@ class db_filler:
         outhtml.write('"Ingest Time" is the UTC of the file ingestion at NCSA.<br>\n')
         outhtml.write('"Delta Time" is the time (in seconds) between Creation and ingestion at NCSA (approximate transfer time).<br><br>\n')
         outhtml.write(db_to_html(self.db, ['select Transfer_Path, File_Size, Creation_Time, "None" as Ingest_Path, "None" as Ingest_Time, 0.0 as Delta_Time from TRANSFER_LIST where FILENUM not in (select FILENUM from Ingest_list) and Nite_Trans = "'+self.nite+'" ORDER BY Creation_Time', 'select Transfer_Path, File_Size, Creation_Time, Ingest_Path, Ingest_Time, printf("%.1f",(julianday(Ingest_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time from Ingest_List i, Transfer_List t where i.FILENUM = t.FILENUM and Nite_Obs = "'+self.nite+'" ORDER BY Creation_time']))
+        outhtml.write('</body>\n</html>')
+        outhtml.close()
+
+    def update_main_html_gen3(self):
+        outhtml=open(self.output_dir+'/index_gen3.html','w')
+        outhtml.write('<html>\n<head>\n<style>\n')
+        outhtml.write('table, th, td {\nborder-collapse: collapse;\nfont-size: 20pt;\n }\n')
+        outhtml.write('p {font-size: 20pt;\n }\n')
+        outhtml.write('</style>\n')
+        outhtml.write('</head>\n<body>\n')
+        outhtml.write('<h1>'+self.name+' Transfer and Ingestion</h1>')
+        outhtml.write('<p>Last updated: '+self.nowstr+'</p>\n')
+        outhtml.write('<h2>Description</h2>\n')
+        outhtml.write('<p>"Nite Obs" is the observing night (tied to UTC-12).<br>\n')
+        outhtml.write('"Last Update" is the most recent UTC time that Nite Obs was checked.<br>\n')
+        outhtml.write('"N Files" is the number of files received at NCSA.<br>\n')
+        outhtml.write('"Last Creation" is the UTC of the most recent file creation.<br>\n')
+        outhtml.write('"Last Transfer" is the UTC of the most recent file creation.<br>\n')
+        outhtml.write('"N Ingest" is the number of files successfully ingested at NCSA.<br>\n')
+        outhtml.write('"N Not Fits" is the number of uningested files that don\'t end in ".fits".<br>\n')
+        outhtml.write('"N Small" is the number of ".fits" files smaller than 10K.<br>\n')
+        outhtml.write('"N Error" is the number of uningested ".fits" files that are greater than 10K.<br>\n')
+        outhtml.write('"Last Ingest" is the UTC of the most recently file ingest.<br><br>\n')
+        outhtml.write(db_to_html(self.db, 'select * from FILE_COUNT_GEN3 ORDER by Nite_Obs DESC',linkify=True,modifier='_gen3'))
         outhtml.write('</body>\n</html>')
         outhtml.close()
 
@@ -390,20 +531,35 @@ class db_filler:
 def main():
     config = get_config()
     num_days=countdays(config['num_days'], config['first_day'],config['last_day'])
+    gen=config['gen']
+    if (gen != 2) and ( gen != 3):
+        print("'gen' variable must be either 2 or 3. Exiting.")
+        sys.exit(1)    
     db_lines=db_filler(config['input_dir'],config['output_dir'],config['ingest_log'],config['last_day'])
-    for num in range(num_days):
-        db_lines.set_date(num)
-        db_lines.count_new_files()
-        db_lines.update_db_files()
-        if config['search_links']:
-            db_lines.count_links_search()
-        else:
-            db_lines.count_links()
-        db_lines.update_db_links()
-    for num in range(num_days):
-        db_lines.set_date(num)
-        db_lines.get_night_data()
-        db_lines.update_nite_html() 
-    db_lines.update_main_html()
+
+    if gen == 2:
+        for num in range(num_days):
+            db_lines.set_date(num)
+            db_lines.count_new_files()
+            db_lines.update_db_files()
+            if config['search_links']:
+                db_lines.count_links_search()
+            else:
+                db_lines.count_links()
+            db_lines.update_db_links()
+        for num in range(num_days):
+            db_lines.set_date(num)
+            db_lines.get_night_data()
+            db_lines.update_nite_html() 
+        db_lines.update_main_html()
+    if gen == 3:
+        db_lines.set_date(num_days)
+        db_lines.count_files_gen3()    
+        db_lines.update_db_gen3() 
+        for num in range(num_days):
+            db_lines.set_date(num)
+            db_lines.get_night_data_gen3()
+            db_lines.update_nite_html_gen3() 
+        db_lines.update_main_html_gen3()
     os.remove(db_lines.lock)
 main()

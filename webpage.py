@@ -1,6 +1,6 @@
 import sqlite3
 
-def db_to_html(db, query, linkify=False):
+def db_to_html(db, query, linkify=False, modifier=''):
     if isinstance(query,str):
       query=[query]
     conn = sqlite3.connect(db)
@@ -32,7 +32,7 @@ def db_to_html(db, query, linkify=False):
        datanum=0
        for data in row:
            if (datanum == 0 ) & (linkify):
-              html+='<a href="'+str(data)+'.html">'+str(data)+'</a>'+tdl
+              html+='<a href="'+str(data)+modifier+'.html">'+str(data)+'</a>'+tdl
            else:
               html+=str(data)+tdl
            datanum+=1

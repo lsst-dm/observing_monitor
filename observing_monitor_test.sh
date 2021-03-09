@@ -1,9 +1,9 @@
 #! /usr/bin/bash
-source /software/lsstsw/stack3/loadLSST.bash
+#source /software/lsstsw/stack3/loadLSST.bash
 #Setting number of days that will be probed. We default to 2 to cover overnight transfer
 
 OUTDIR=~/public_html
-OUTDIR=/lsstdata/offline/web_data/processing_monitor
+#OUTDIR=/lsstdata/offline/web_data/processing_monitor
 #OUTDIR=/lsstdata/user/staff/web_data/processing_monitor/
 
 
@@ -19,9 +19,9 @@ OUTDIR=/lsstdata/offline/web_data/processing_monitor
 #INPUT is the directory 1 level up from the repo
 #OUTPUT is where the html and a small db will be written
 
-#INPUT=/lsstdata/offline/teststand/auxTel/L1Archiver
-#OUTPUT=$OUTDIR/auxTel
-#OPTIONS="--first_day=20190305"
+INPUT=/lsstdata/offline/teststand/auxTel/L1Archiver
+OUTPUT=$OUTDIR/auxTel
+OPTIONS="--first_day=202102015 --gen 3"
 
 #INPUT=/lsstdata/offline/teststand/comcam/CCS
 #OUTPUT=$OUTDIR/comcam_ccs
@@ -31,9 +31,9 @@ OUTDIR=/lsstdata/offline/web_data/processing_monitor
 #OUTPUT=$OUTDIR/NCSA_auxTel
 #OPTIONS="--first_day=20200325"
 
-INPUT=/lsstdata/offline/teststand/BOT 
-OUTPUT=$OUTDIR/BOT 
-OPTIONS="--first_day=20201117"
+#INPUT=/lsstdata/offline/teststand/BOT 
+#OUTPUT=$OUTDIR/BOT 
+#OPTIONS="--first_day=20201117"
 
 #INPUT=/lsstdata/offline/teststand/comcam/Archiver
 #OUTPUT=$OUTDIR/comcam_archiver
