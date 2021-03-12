@@ -280,6 +280,7 @@ class db_filler:
   
     def count_links(self):    
         self.ltimes=[]
+        self.ltimestrs=[]
         self.ltimetttt=[]
         self.lpaths=[]
         self.ldevs=[]
@@ -454,7 +455,7 @@ class db_filler:
         outhtml.write('"Transfer Time" is the UTC the file was created.<br>\n')
         outhtml.write('"Ingest Time" is the UTC of the file ingestion at NCSA.<br>\n')
         outhtml.write('"Delta Time 1" is the time (in seconds) between Creation and Transfer to NCSA (approximate transfer time).<br>\n')
-        outhtml.write('"Delta Time 2" is the time (in seconds) between Transfer and Ingestion to NCSA (approximate transfer time).<br>\n')
+        outhtml.write('"Delta Time 2" is the time (in seconds) between Transfer and Ingestion to NCSA (approximate ingest time).<br>\n')
         outhtml.write('"Err Message" is the Error Message from a failed ingestion attempt (if the most recent attempt failed).<br><br>\n')
         outhtml.write(db_to_html(self.db, ['select Transfer_Path, Status, File_Size, Creation_Time, Transfer_Time, Ingest_Time,  printf("%.1f",(julianday(Transfer_Time)-julianday(Creation_Time))*24*3600.) as Delta_Time_1,  printf("%.1f",(julianday(Ingest_Time)-julianday(Transfer_Time))*24*3600.) as Delta_Time_2, Err_Message from FILE_LIST_GEN3 where Nite = "'+self.nite+'" ORDER BY Creation_Time']))
         outhtml.write('</body>\n</html>')

@@ -36,7 +36,7 @@ for indir in sys.argv[2:]:
    outhtml.write(db_to_html(db, 'select * from FILE_COUNT where Nite_Obs >= "'+firstnite+'" order by Nite_Obs DESC'))
 
    if os.path.exists(indir+"/index_gen3.html"):
-       outhtml.write('\n<h2><a href="'+stream+'/index_gen3.html">'+stream+'Gen 3</a></h2>\n')
+       outhtml.write('\n<h2><a href="'+stream+'/index_gen3.html">'+stream+' Gen 3</a></h2>\n')
        outhtml.write(db_to_html(db, 'select * from FILE_COUNT_GEN3 where Nite_Obs >= "'+firstnite+'" order by Nite_Obs DESC'))
    
 outhtml.write('</body>\n</html>')
