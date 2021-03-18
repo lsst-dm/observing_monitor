@@ -79,10 +79,10 @@ def rec_listdir(dir):
     for file in filelist:
         if os.path.isdir(dir+'/'+file):
            for file2 in os.listdir(dir+'/'+file):
-               if file2[0] is not '.':
+               if file2[0] != '.':
                   output.append(file+'/'+file2)
         else:
-           if file[0] is not '.':
+           if file[0] != '.':
               output.append(file)
     return sorted(output)
 
