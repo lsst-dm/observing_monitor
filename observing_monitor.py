@@ -144,13 +144,14 @@ def get_config():
     return config
 
 class db_filler:
-    def __init__(self,input_dir,output_dir,ingest_log,last_day=[]):
+    def __init__(self,input_dir,output_dir,ingest_log,gen,last_day=[]):
         self.now=datetime.utcnow()
         self.nowstr=self.now.strftime('%Y-%m-%dT%H:%M:%S')
         self.input_dir=input_dir
         self.output_dir=output_dir
         self.lock=output_dir+'/.monitor.lock'
         self.name=output_dir.split('/')[-1]
+        self.gen=gen
         if len(self.name) == 0:
            self.name=output_dir.split('/')[-2]
         self.check_input_dir()
@@ -576,7 +577,7 @@ def main():
     if (gen != 2) and ( gen != 3):
         print("'gen' variable must be either 2 or 3. Exiting.")
         sys.exit(1)    
-    db_lines=db_filler(config['input_dir'],config['output_dir'],config['ingest_log'],config['last_day'])
+    db_lines=db_filler(config['input_dir'],config['output_dir'],config['ingest_log'],config['gen'],config['last_day'])
 
     if gen == 2:
         for num in range(num_days):
